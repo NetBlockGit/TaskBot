@@ -87,7 +87,6 @@ export function BotStart() {
       getManager().find(Task).then(e => {
         message.reply(JSON.stringify(e));
       })
-      getting = EnumGetting.Content;
     }
   });
 
