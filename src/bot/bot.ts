@@ -10,10 +10,8 @@ import { getConnection, getManager } from "typeorm";
 import { Task } from "../entity/Task";
 
 export function BotStart() {
-  const task = new Task()
-  task.content = "toast"
-  task.dueDate = new Date()
-  getManager().save(task)
+
+
   const logger = pino({
     level: "info",
     transport: {
@@ -53,11 +51,44 @@ export function BotStart() {
 
   client.on("error", (m) => logger.error(m));
 
-  client.on("messageCreate", async (message) => {
+  enum EnumGetting {
+    Content,
+    EndDate,
+    Nothing
+  }
+  const task = new Task();
 
-    const channel = client.channels.cache.get(message.channelId) as TextChannel;
-    if (!message.author.bot) channel.send("oh bhai")
-    console.log(message);
+  let getting: EnumGetting;
+
+
+  client.on("messageCreate", async (message) => {
+    if (message.author.bot) return
+
+    if (getting == EnumGetting.Content) {
+      task.content = message.content
+      message.reply("Enter End Date");
+      getting = EnumGetting.EndDate;
+      return
+    }
+
+    if (getting == EnumGetting.EndDate) {
+      task.dueDate = new Date(message.content)
+      getManager().save(task)
+      message.reply("Done thank you");
+      getting = EnumGetting.Nothing;
+      return
+    }
+    if (message.content == ".add") {
+      message.reply("Enter content");
+      getting = EnumGetting.Content;
+    }
+
+    if (message.content == ".get") {
+      getManager().find(Task).then(e => {
+        message.reply(JSON.stringify(e));
+      })
+      getting = EnumGetting.Content;
+    }
   });
 
 
