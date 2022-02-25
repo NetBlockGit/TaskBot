@@ -49,7 +49,7 @@ client.on("error", (m) => logger.error(m));
 client.on("messageCreate", async (message) => {
 
   const channel = client.channels.cache.get(message.channelId) as TextChannel;
-  channel.send("kaise ho")
+  if (!message.author.bot) channel.send("oh bhai")
   console.log(message);
 });
 
